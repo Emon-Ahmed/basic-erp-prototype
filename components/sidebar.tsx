@@ -31,7 +31,7 @@ export function Sidebar() {
       <div className="flex h-16 items-center px-6 border-b border-gray-200">
         <div className="flex items-center">
           <Factory className="h-8 w-8 text-blue-600" />
-          <span className="ml-2 text-xl font-bold text-gray-900">TexTrack</span>
+          <span className="ml-2 text-xl font-bold text-gray-900">ERP Prototype</span>
         </div>
       </div>
 
