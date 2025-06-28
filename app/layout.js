@@ -6,9 +6,9 @@ import { DataProvider } from "../contexts/DataContext"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata = {
-  title: "TexTrack ERP - Garment Production Management",
-  description: "A lightweight web-based ERP system for garment factories",
-    generator: 'v0.dev'
+  title: "ERP Prototype - Business Management System",
+  description: "A comprehensive ERP system for modern business management",
+  generator: "v0.dev",
 }
 
 export default function RootLayout({ children }) {

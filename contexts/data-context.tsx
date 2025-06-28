@@ -2,35 +2,39 @@
 
 import { createContext, useContext, useState, type ReactNode } from "react"
 
-// Types
 interface InventoryItem {
   id: string
   name: string
   category: string
   quantity: number
-  unit: string
-  threshold: number
+  minStock: number
+  unitPrice: number
+  supplier: string
+  lastUpdated: string
 }
 
 interface OrderItem {
   name: string
   quantity: number
+  price: number
 }
 
 interface Order {
   id: string
   customer: string
-  items: OrderItem[]
-  status: "pending" | "production" | "completed"
+  items: string[]
+  status: "pending" | "production" | "completed" | "cancelled"
+  total: number
   createdAt: string
 }
 
 interface ProductionTask {
   id: string
   title: string
-  orderId: string
+  customer: string
   status: "todo" | "cutting" | "sewing" | "quality" | "done"
   assignedWorker?: string
+  dueDate: string
 }
 
 interface Employee {
@@ -41,6 +45,19 @@ interface Employee {
   department: string
   salary: number
   joinDate: string
+  status: "active" | "inactive"
+}
+
+interface PayrollRecord {
+  id: string
+  employeeId: string
+  employeeName: string
+  baseSalary: number
+  overtime: number
+  deductions: number
+  netPay: number
+  payPeriod: string
+  status: "pending" | "paid"
 }
 
 interface DataContextType {
@@ -48,12 +65,20 @@ interface DataContextType {
   orders: Order[]
   productionTasks: ProductionTask[]
   employees: Employee[]
-  updateOrderStatus: (orderId: string, status: "pending" | "production" | "completed") => void
-  updateTaskStatus: (taskId: string, status: "todo" | "cutting" | "sewing" | "quality" | "done") => void
+  payrollRecords: PayrollRecord[]
+  addInventoryItem: (item: Omit<InventoryItem, "id">) => void
+  updateInventoryItem: (id: string, updates: Partial<InventoryItem>) => void
+  deleteInventoryItem: (id: string) => void
+  addOrder: (order: Omit<Order, "id">) => void
+  updateOrderStatus: (id: string, status: Order["status"]) => void
+  deleteOrder: (id: string) => void
+  updateTaskStatus: (id: string, status: ProductionTask["status"]) => void
   assignWorker: (taskId: string, workerId: string) => void
-  addEmployee: (employee: Employee) => void
-  updateEmployee: (employee: Employee) => void
-  deleteEmployee: (employeeId: string) => void
+  addEmployee: (employee: Omit<Employee, "id">) => void
+  updateEmployee: (id: string, updates: Partial<Employee>) => void
+  deleteEmployee: (id: string) => void
+  generatePayroll: (employeeId: string) => void
+  updatePayrollStatus: (id: string, status: PayrollRecord["status"]) => void
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined)
@@ -63,176 +88,231 @@ const sampleInventory: InventoryItem[] = [
   {
     id: "1",
     name: "Cotton Fabric",
-    category: "fabric",
-    quantity: 45,
-    unit: "yards",
-    threshold: 50,
+    category: "Fabric",
+    quantity: 150,
+    minStock: 200,
+    unitPrice: 12.5,
+    supplier: "Textile Co.",
+    lastUpdated: "2024-01-15",
   },
   {
     id: "2",
-    name: "Thread",
-    category: "supplies",
-    quantity: 15,
-    unit: "spools",
-    threshold: 20,
+    name: "Polyester Thread",
+    category: "Thread",
+    quantity: 50,
+    minStock: 100,
+    unitPrice: 3.25,
+    supplier: "Thread Supply Inc.",
+    lastUpdated: "2024-01-14",
   },
   {
     id: "3",
     name: "Buttons",
-    category: "accessories",
-    quantity: 8,
-    unit: "packs",
-    threshold: 10,
-  },
-  {
-    id: "4",
-    name: "Zippers",
-    category: "accessories",
-    quantity: 25,
-    unit: "pieces",
-    threshold: 15,
+    category: "Accessories",
+    quantity: 500,
+    minStock: 1000,
+    unitPrice: 0.15,
+    supplier: "Button World",
+    lastUpdated: "2024-01-13",
   },
 ]
 
 const sampleOrders: Order[] = [
   {
-    id: "ORD001",
+    id: "1",
     customer: "Fashion Retail Co.",
-    items: [
-      { name: "T-Shirts", quantity: 100 },
-      { name: "Jeans", quantity: 50 },
-    ],
+    items: ["T-Shirts", "Jeans"],
     status: "production",
-    createdAt: "2024-01-15",
+    total: 3750,
+    createdAt: "2024-01-10",
   },
   {
-    id: "ORD002",
+    id: "2",
     customer: "Urban Clothing",
-    items: [{ name: "Hoodies", quantity: 75 }],
+    items: ["Hoodies", "Sweatpants"],
     status: "pending",
-    createdAt: "2024-01-16",
+    total: 4500,
+    createdAt: "2024-01-12",
   },
   {
-    id: "ORD003",
-    customer: "Style Boutique",
-    items: [
-      { name: "Dresses", quantity: 30 },
-      { name: "Skirts", quantity: 20 },
-    ],
+    id: "3",
+    customer: "Casual Wear Ltd.",
+    items: ["Polo Shirts"],
     status: "completed",
-    createdAt: "2024-01-14",
+    total: 4000,
+    createdAt: "2024-01-08",
   },
 ]
 
 const sampleProductionTasks: ProductionTask[] = [
   {
-    id: "TASK001",
-    title: "Cut fabric for T-Shirts",
-    orderId: "ORD001",
+    id: "1",
+    title: "Cut fabric for T-shirts",
+    customer: "Fashion Retail Co.",
     status: "cutting",
-    assignedWorker: "3",
+    assignedWorker: "Mike Worker",
+    dueDate: "2024-01-20",
   },
   {
-    id: "TASK002",
-    title: "Sew sleeves for Hoodies",
-    orderId: "ORD002",
-    status: "sewing",
-    assignedWorker: "2",
-  },
-  {
-    id: "TASK003",
-    title: "Quality check for Dresses",
-    orderId: "ORD003",
-    status: "quality",
-    assignedWorker: "1",
-  },
-  {
-    id: "TASK004",
-    title: "Package completed items",
-    orderId: "ORD003",
-    status: "done",
-  },
-  {
-    id: "TASK005",
-    title: "Prepare materials for Jeans",
-    orderId: "ORD001",
+    id: "2",
+    title: "Sew Hoodies",
+    customer: "Urban Clothing",
     status: "todo",
+    dueDate: "2024-01-25",
   },
 ]
 
 const sampleEmployees: Employee[] = [
   {
     id: "1",
-    name: "Admin User",
+    name: "John Admin",
     email: "admin@erp.com",
     role: "admin",
     department: "Management",
-    salary: 75000,
+    salary: 85000,
     joinDate: "2023-01-15",
+    status: "active",
   },
   {
     id: "2",
-    name: "Manager User",
+    name: "Sarah Manager",
     email: "manager@erp.com",
     role: "manager",
     department: "Production",
-    salary: 55000,
+    salary: 65000,
     joinDate: "2023-03-20",
+    status: "active",
   },
   {
     id: "3",
-    name: "Worker User",
+    name: "Mike Worker",
     email: "worker@erp.com",
     role: "worker",
     department: "Production",
-    salary: 35000,
+    salary: 45000,
     joinDate: "2023-06-10",
+    status: "active",
+  },
+]
+
+const samplePayrollRecords: PayrollRecord[] = [
+  {
+    id: "1",
+    employeeId: "1",
+    employeeName: "John Admin",
+    baseSalary: 7083.33,
+    overtime: 0,
+    deductions: 850,
+    netPay: 6233.33,
+    payPeriod: "January 2024",
+    status: "paid",
   },
 ]
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [inventory] = useState<InventoryItem[]>(sampleInventory)
+  const [inventory, setInventory] = useState<InventoryItem[]>(sampleInventory)
   const [orders, setOrders] = useState<Order[]>(sampleOrders)
   const [productionTasks, setProductionTasks] = useState<ProductionTask[]>(sampleProductionTasks)
   const [employees, setEmployees] = useState<Employee[]>(sampleEmployees)
+  const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>(samplePayrollRecords)
 
-  const updateOrderStatus = (orderId: string, status: "pending" | "production" | "completed") => {
-    setOrders((prev) => prev.map((order) => (order.id === orderId ? { ...order, status } : order)))
+  const addInventoryItem = (item: Omit<InventoryItem, "id">) => {
+    const newItem = { ...item, id: Date.now().toString() }
+    setInventory((prev) => [...prev, newItem])
   }
 
-  const updateTaskStatus = (taskId: string, status: "todo" | "cutting" | "sewing" | "quality" | "done") => {
-    setProductionTasks((prev) => prev.map((task) => (task.id === taskId ? { ...task, status } : task)))
+  const updateInventoryItem = (id: string, updates: Partial<InventoryItem>) => {
+    setInventory((prev) => prev.map((item) => (item.id === id ? { ...item, ...updates } : item)))
+  }
+
+  const deleteInventoryItem = (id: string) => {
+    setInventory((prev) => prev.filter((item) => item.id !== id))
+  }
+
+  const addOrder = (order: Omit<Order, "id">) => {
+    const newOrder = { ...order, id: Date.now().toString() }
+    setOrders((prev) => [...prev, newOrder])
+  }
+
+  const updateOrderStatus = (id: string, status: Order["status"]) => {
+    setOrders((prev) => prev.map((order) => (order.id === id ? { ...order, status } : order)))
+  }
+
+  const deleteOrder = (id: string) => {
+    setOrders((prev) => prev.filter((order) => order.id !== id))
+  }
+
+  const updateTaskStatus = (id: string, status: ProductionTask["status"]) => {
+    setProductionTasks((prev) => prev.map((task) => (task.id === id ? { ...task, status } : task)))
   }
 
   const assignWorker = (taskId: string, workerId: string) => {
+    const worker = employees.find((emp) => emp.id === workerId)
     setProductionTasks((prev) =>
-      prev.map((task) => (task.id === taskId ? { ...task, assignedWorker: workerId } : task)),
+      prev.map((task) => (task.id === taskId ? { ...task, assignedWorker: worker?.name } : task)),
     )
   }
 
-  const addEmployee = (employee: Employee) => {
-    setEmployees((prev) => [...prev, employee])
+  const addEmployee = (employee: Omit<Employee, "id">) => {
+    const newEmployee = { ...employee, id: Date.now().toString() }
+    setEmployees((prev) => [...prev, newEmployee])
   }
 
-  const updateEmployee = (updatedEmployee: Employee) => {
-    setEmployees((prev) => prev.map((emp) => (emp.id === updatedEmployee.id ? updatedEmployee : emp)))
+  const updateEmployee = (id: string, updates: Partial<Employee>) => {
+    setEmployees((prev) => prev.map((emp) => (emp.id === id ? { ...emp, ...updates } : emp)))
   }
 
-  const deleteEmployee = (employeeId: string) => {
-    setEmployees((prev) => prev.filter((emp) => emp.id !== employeeId))
+  const deleteEmployee = (id: string) => {
+    setEmployees((prev) => prev.filter((emp) => emp.id !== id))
+  }
+
+  const generatePayroll = (employeeId: string) => {
+    const employee = employees.find((emp) => emp.id === employeeId)
+    if (employee) {
+      const baseSalary = employee.salary / 12
+      const overtime = Math.random() * 300
+      const deductions = baseSalary * 0.12
+      const netPay = baseSalary + overtime - deductions
+
+      const newPayroll: PayrollRecord = {
+        id: Date.now().toString(),
+        employeeId: employee.id,
+        employeeName: employee.name,
+        baseSalary,
+        overtime,
+        deductions,
+        netPay,
+        payPeriod: new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+        status: "pending",
+      }
+
+      setPayrollRecords((prev) => [...prev, newPayroll])
+    }
+  }
+
+  const updatePayrollStatus = (id: string, status: PayrollRecord["status"]) => {
+    setPayrollRecords((prev) => prev.map((record) => (record.id === id ? { ...record, status } : record)))
   }
 
   const value: DataContextType = {
     inventory,
+    addInventoryItem,
+    updateInventoryItem,
+    deleteInventoryItem,
     orders,
-    productionTasks,
-    employees,
+    addOrder,
     updateOrderStatus,
+    deleteOrder,
+    productionTasks,
     updateTaskStatus,
     assignWorker,
+    employees,
     addEmployee,
     updateEmployee,
     deleteEmployee,
+    payrollRecords,
+    generatePayroll,
+    updatePayrollStatus,
   }
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>

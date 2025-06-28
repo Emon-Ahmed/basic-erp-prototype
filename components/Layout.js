@@ -11,6 +11,10 @@ import {
   Bars3Icon,
   XMarkIcon,
   ArrowRightOnRectangleIcon,
+  UsersIcon,
+  CurrencyDollarIcon,
+  UserCircleIcon,
+  ArrowUpIcon,
 } from "@heroicons/react/24/outline"
 
 const navigation = [
@@ -18,6 +22,10 @@ const navigation = [
   { name: "Inventory", href: "/inventory", icon: CubeIcon, roles: ["admin", "manager"] },
   { name: "Orders", href: "/orders", icon: ClipboardDocumentListIcon, roles: ["admin", "manager"] },
   { name: "Production", href: "/production", icon: CogIcon, roles: ["admin", "manager", "worker"] },
+  { name: "HR & Payroll", href: "/hr", icon: CurrencyDollarIcon, roles: ["admin", "manager"] },
+  { name: "User Management", href: "/users", icon: UsersIcon, roles: ["admin"] },
+  { name: "Profile Settings", href: "/profile", icon: UserCircleIcon, roles: ["admin", "manager", "worker"] },
+  { name: "Upgrade", href: "/upgrade", icon: ArrowUpIcon, roles: ["admin"] },
 ]
 
 export default function Layout({ children, currentPage }) {
@@ -33,7 +41,7 @@ export default function Layout({ children, currentPage }) {
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
         <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-white">
           <div className="flex h-16 items-center justify-between px-4 border-b">
-            <h1 className="text-xl font-bold text-blue-600">TexTrack</h1>
+            <h1 className="text-xl font-bold text-blue-600">ERP Prototype</h1>
             <button onClick={() => setSidebarOpen(false)}>
               <XMarkIcon className="h-6 w-6" />
             </button>
@@ -59,7 +67,7 @@ export default function Layout({ children, currentPage }) {
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="flex flex-col flex-grow bg-white border-r border-gray-200">
           <div className="flex h-16 items-center px-4 border-b">
-            <h1 className="text-xl font-bold text-blue-600">TexTrack</h1>
+            <h1 className="text-xl font-bold text-blue-600">ERP Prototype</h1>
           </div>
           <nav className="flex-1 px-4 py-4 space-y-2">
             {filteredNavigation.map((item) => (
