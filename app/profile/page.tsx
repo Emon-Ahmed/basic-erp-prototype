@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { ProtectedRoute } from "@/components/protected-route"
-import { Layout } from "@/components/layout"
+import Layout from "@/components/layout"
 import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"

@@ -1,7 +1,7 @@
 "use client"
 
 import { useAuth } from "@/contexts/auth-context"
-import { Layout } from "@/components/layout"
+import Layout from "@/components/layout"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -121,13 +121,12 @@ export default function UpgradePage() {
               return (
                 <Card
                   key={plan.name}
-                  className={`relative ${
-                    plan.popular
+                  className={`relative ${plan.popular
                       ? "border-blue-500 shadow-lg scale-105"
                       : plan.current
                         ? "border-green-500 bg-green-50"
                         : "border-gray-200"
-                  }`}
+                    }`}
                 >
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
