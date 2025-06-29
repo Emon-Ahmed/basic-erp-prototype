@@ -12,8 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Factory, AlertCircle } from "lucide-react"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
+  const [email, setEmail] = useState("admin@erp.com")
+  const [password, setPassword] = useState("password")
   const [error, setError] = useState("")
   const { login, isLoading } = useAuth()
   const router = useRouter()
@@ -37,7 +37,7 @@ export default function LoginPage() {
           <div className="flex justify-center">
             <Factory className="h-12 w-12 text-blue-600" />
           </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">TexTrack ERP</h2>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">ERP Prototype</h2>
           <p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
         </div>
 
